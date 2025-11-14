@@ -1,0 +1,18 @@
+@startuml
+title Diagrama de Estados - Autenticação (frontend)
+
+[*] --> Unauthenticated
+
+state Unauthenticated {
+  [*] --> Idle
+  Idle --> LoggingIn : submit login
+  LoggingIn --> Authenticated : login sucesso / token salvo
+  LoggingIn --> Unauthenticated : login falhou
+}
+
+Authenticated --> SessionExpired : token expirou / 403
+SessionExpired --> Unauthenticated : limpar token
+Authenticated --> LoggedOut : logout
+LoggedOut --> Unauthenticated
+
+@enduml

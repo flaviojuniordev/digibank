@@ -1,0 +1,27 @@
+@startuml
+title Sequência: Registro de Cliente
+
+actor Browser
+participant "Frontend (React)" as FE
+participant "API - /clientes/registro\n(Express)" as API
+participant "ClienteController.register" as Controller
+participant "DB (Postgres)" as DB
+
+Browser -> FE : Preenche formulário (nome, email, cpf_cnpj, senha, ...)
+FE -> API : POST /clientes/registro { dados }
+API -> Controller : register(req)
+Controller -> DB : SELECT id FROM clientes WHERE email OR cpf_cnpj
+alt cliente existe
+  DB --> Controller : retorna rows > 0
+  Controller -> API : res.status(400).json(...)
+  API -> FE : 400 Cliente já existe
+else criar cliente
+  DB --> Controller : retorna vazio
+  Controller -> DB : INSERT INTO clientes (...) RETURNING id, nome, email
+  DB --> Controller : cliente criado
+  Controller -> API : res.status(201).json({ cliente })
+  API -> FE : 201 sucesso (mensagem + cliente)
+  FE -> Browser : redirecionar para login
+end
+
+@enduml

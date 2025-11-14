@@ -1,0 +1,39 @@
+@startuml
+title Sequência: Transferência
+
+actor Browser
+participant "Frontend (React)" as FE
+participant "API - /transacoes/transferir\n(Express)" as API
+participant "Auth middleware" as Auth
+participant "TransacaoController.transferir" as Controller
+participant "DB (Postgres)" as DB
+
+Browser -> FE : Usuário envia valor + destinatário
+FE -> API : POST /transacoes/transferir (Authorization: Bearer <token>)
+API -> Auth : verify token
+Auth -> API : valida e insere req.clienteId
+API -> Controller : transferir(req)
+Controller -> DB : SELECT saldo FROM clientes WHERE id = remetenteId
+DB --> Controller : saldoRemetente
+Controller -> DB : SELECT destinatario by id or cpf
+DB --> Controller : destinatario row
+Controller -> DB : BEGIN
+Controller -> DB : UPDATE clientes SET saldo = saldo - valor WHERE id = remetenteId
+DB --> Controller : OK
+Controller -> DB : UPDATE clientes SET saldo = saldo + valor WHERE id = destinatarioId
+DB --> Controller : OK
+Controller -> DB : INSERT INTO transacoes (remetente_id,destinatario_id,valor)
+DB --> Controller : OK
+Controller -> DB : COMMIT
+DB --> Controller : OK
+Controller -> API : res.json({ mensagem, novoSaldo, destinatario })
+API -> FE : 200 sucesso
+FE -> Browser : Atualiza UI (novo saldo, sucesso)
+alt erro
+  Controller -> DB : ROLLBACK
+  DB --> Controller : OK
+  Controller -> API : res.status(500)
+  API -> FE : 500 erro
+end
+
+@enduml

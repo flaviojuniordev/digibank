@@ -1,0 +1,14 @@
+@startuml
+title Diagrama de Estados - Ciclo de Vida da Transferência (backend)
+
+[*] --> Initiated
+Initiated --> Validated : dados válidos
+Validated --> Processing : Begin DB Transaction
+Processing --> Committed : updates ok && insert ok
+Processing --> RolledBack : erro durante updates/inserts
+Committed --> Completed
+RolledBack --> Failed
+Failed --> [*]
+Completed --> [*]
+
+@enduml

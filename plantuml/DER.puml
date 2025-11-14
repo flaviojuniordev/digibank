@@ -1,0 +1,43 @@
+@startuml
+' ERD - DigiBank
+title ERD (DER) - banco_digital
+
+entity clientes {
+  * id : SERIAL <<PK>>
+  --
+  nome : VARCHAR(255)
+  email : VARCHAR(255) <<UNIQUE>>
+  cpf_cnpj : VARCHAR(18) <<UNIQUE>>
+  idade_data_fundacao : VARCHAR(50)
+  renda_mensal : DECIMAL(10,2)
+  senha : VARCHAR(255)
+  saldo : DECIMAL(10,2)
+  created_at : TIMESTAMP
+}
+
+entity transacoes {
+  * id : SERIAL <<PK>>
+  --
+  remetente_id : INTEGER <<FK clientes.id>>
+  destinatario_id : INTEGER <<FK clientes.id>>
+  valor : DECIMAL(10,2)
+  data : TIMESTAMP
+}
+
+clientes ||--o{ transacoes : "remetente_id"
+clientes ||--o{ transacoes : "destinatario_id"
+
+note top of clientes
+  Índices:
+  idx_clientes_email
+  idx_clientes_cpf_cnpj
+end note
+
+note top of transacoes
+  Índices:
+  idx_transacoes_remetente
+  idx_transacoes_destinatario
+  idx_transacoes_data
+end note
+
+@enduml

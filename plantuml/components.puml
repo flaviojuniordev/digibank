@@ -1,0 +1,38 @@
+@startuml
+' Diagrama de Componentes
+title Diagrama de Componentes - DigiBank
+
+package "Frontend" {
+  [Browser] as Browser
+  [DigiBank React App\n(Vite)"] as Frontend
+  Browser --> Frontend : Usuário (UI)
+}
+
+package "Backend (API)" {
+  [API - Express\nserver.js] as API
+  [clienteController.js] as ClienteCtrl
+  [transacaoController.js] as TransacaoCtrl
+  [auth middleware\n(auth.js)] as Auth
+  [models (clienteModel/db.js)] as Models
+  API --> ClienteCtrl
+  API --> TransacaoCtrl
+  ClienteCtrl --> Models
+  TransacaoCtrl --> Models
+  API -> Auth : usa (intercepta rotas protegidas)
+}
+
+database "Postgres\n(banco_digital)" as DB
+
+Frontend --> API : HTTP/JSON (axios - /clientes, /transacoes)
+API --> DB : SQL (queries via pool)
+
+' Deployment view
+node "Host / Docker" {
+  component "docker-compose: frontend (web)" as C_frontend
+  component "docker-compose: backend (api)" as C_backend
+  component "docker-compose: db (postgres)" as C_db
+  C_frontend --> C_backend : HTTP
+  C_backend --> C_db : TCP 5432
+}
+
+@enduml

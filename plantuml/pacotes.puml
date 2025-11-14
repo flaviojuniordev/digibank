@@ -1,0 +1,113 @@
+@startuml
+' Diagrama de Pacotes - DigiBank
+title Diagrama de Pacotes - DigiBank
+
+' Layout sugerido
+left to right direction
+
+package "digibank (root)" {
+  package "frontend" {
+    package "src" {
+      package "pages" {
+        [Login.tsx]
+        [Register.tsx]
+        [Dashboard.tsx]
+        [TransferenciaNew.tsx]
+        [HistoricoNew.tsx]
+        [PainelClientes.tsx]
+      }
+      package "components" {
+        [ProtectedRoute.tsx]
+      }
+      package "services" {
+        [api.ts]
+      }
+      package "hooks" {
+        [useAuth.ts]
+      }
+      package "routes" {
+        [AppRoutes.tsx]
+      }
+    }
+    [package.json (frontend)]
+    [Dockerfile (frontend)]
+  }
+
+  package "backend" {
+    package "controllers" {
+      [clienteController.js]
+      [transacaoController.js]
+    }
+    package "routes" {
+      [clienteRoutes.js]
+      [transacaoRoutes.js]
+    }
+    package "middleware" {
+      [auth.js]
+    }
+    package "models" {
+      [clienteModel.js]
+      [db.js]
+    }
+    [server.js]
+    [package.json (backend)]
+    [Dockerfile (backend)]
+    [.env]
+  }
+
+  package "scripts" {
+    [init.sql]
+  }
+
+  package "deployment" {
+    [docker-compose.yml]
+    [digibank.bat / digibank.sh]
+  }
+}
+
+' Depêndencias (setas indicando uso)
+' Frontend -> Backend (API)
+[AppRoutes.tsx] --> [api.ts] : usa
+[Login.tsx] --> [api.ts]
+[Register.tsx] --> [api.ts]
+[Dashboard.tsx] --> [api.ts]
+[TransferenciaNew.tsx] --> [api.ts]
+
+' Frontend components & hooks
+[AppRoutes.tsx] --> [ProtectedRoute.tsx]
+[AppRoutes.tsx] --> [useAuth.ts]
+
+' Backend: routes -> controllers -> models -> db
+[clienteRoutes.js] --> [clienteController.js]
+[transacaoRoutes.js] --> [transacaoController.js]
+[clienteController.js] --> [clienteModel.js]
+[transacaoController.js] --> [clienteModel.js]
+[clienteModel.js] --> [db.js]
+
+' Auth middleware protege rotas
+[clienteRoutes.js] --> [auth.js] : protege
+[transacaoRoutes.js] --> [auth.js] : protege
+[auth.js] --> [db.js] : lê token (jwt) p/ req.clienteId
+
+' Scripts e DB
+[init.sql] --> [clienteModel.js] : define tabelas
+[docker-compose.yml] --> [Dockerfile (frontend)]
+[docker-compose.yml] --> [Dockerfile (backend)]
+[docker-compose.yml] --> [postgres container]
+
+' Notas (mapeamento físico)
+note left of "frontend"
+  Local: frontend/
+  - src/pages, src/components, src/services, src/hooks, src/routes
+end note
+
+note left of "backend"
+  Local: backend/
+  - controllers/, routes/, middleware/, models/, server.js
+end note
+
+note left of "scripts"
+  Local: scripts/init.sql (DER & seeds)
+end note
+
+@enduml

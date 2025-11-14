@@ -1,0 +1,31 @@
+@startuml
+title Sequência: Login
+
+actor Browser
+participant "Frontend (React)" as FE
+participant "API - /clientes/login\n(Express)" as API
+participant "ClienteController.login" as Controller
+participant "DB (Postgres)" as DB
+participant "bcrypt" as Bcrypt
+participant "jwt" as JWT
+
+Browser -> FE : Submete email + senha
+FE -> API : POST /clientes/login { email, senha }
+API -> Controller : login(req)
+Controller -> DB : SELECT id, nome, email, senha FROM clientes WHERE email = $1
+DB --> Controller : cliente row
+Controller -> Bcrypt : compare(senha, hash)
+alt senha inválida
+  Bcrypt --> Controller : false
+  Controller -> API : res.status(401)
+  API -> FE : 401 (erro)
+else senha válida
+  Bcrypt --> Controller : true
+  Controller -> JWT : sign({ id }, JWT_SECRET, expiresIn)
+  JWT --> Controller : token
+  Controller -> API : res.json({ token, cliente, redirectUrl })
+  API -> FE : 200 + token
+  FE -> Browser : armazenar token em localStorage, navegar /dashboard
+end
+
+@enduml

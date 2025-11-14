@@ -1,0 +1,27 @@
+@startuml
+title Diagrama de Comunicação - Transferência
+
+object Browser
+object Frontend
+object API
+object Auth
+object TransacaoController
+object DB
+
+Browser -> Frontend : 1. preencher form + enviar
+Frontend -> API : 2. POST /transacoes/transferir (token)
+API -> Auth : 3. verifica token
+Auth -> API : 4. token válido -> req.clienteId
+API -> TransacaoController : 5. requisita transferir
+TransacaoController -> DB : 6. SELECT saldo remetente
+TransacaoController -> DB : 7. SELECT destinatário
+TransacaoController -> DB : 8. BEGIN
+TransacaoController -> DB : 9. UPDATE saldo remetente
+TransacaoController -> DB : 10. UPDATE saldo destinatario
+TransacaoController -> DB : 11. INSERT transacoes
+TransacaoController -> DB : 12. COMMIT
+TransacaoController -> API : 13. resposta sucesso
+API -> Frontend : 14. 200 { novoSaldo, destinatario }
+Frontend -> Browser : 15. atualizar UI
+
+@enduml

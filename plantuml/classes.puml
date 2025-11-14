@@ -1,0 +1,58 @@
+@startuml
+title Diagrama de Classes - DigiBank
+
+class Cliente {
+  +id: int
+  +nome: string
+  +email: string
+  +cpf_cnpj: string
+  +idade_data_fundacao: string
+  +renda_mensal: decimal
+  +senha: string
+  +saldo: decimal
+  +created_at: timestamp
+  --
+  +create(data): Cliente
+  +findById(id): Cliente
+  +findByEmail(email): Cliente
+  +update(id, data): Cliente
+  +delete(id)
+  +listAll(): Cliente[]
+}
+
+class Transacao {
+  +id: int
+  +remetente_id: int
+  +destinatario_id: int
+  +valor: decimal
+  +data: timestamp
+  --
+  +create(remetente_id, destinatario_id, valor): Transacao
+  +listByCliente(cliente_id): Transacao[]
+}
+
+class ClienteController {
+  +register(req, res)
+  +login(req, res)
+  +listarClientes(req, res)
+  +atualizarCliente(req, res)
+  +deletarCliente(req, res)
+}
+
+class TransacaoController {
+  +transferir(req, res)
+  +verSaldo(req, res)
+  +verTransacoes(req, res)
+  +buscarDestinatario(req, res)
+}
+
+class AuthMiddleware {
+  +verifyToken(req, res, next)
+}
+
+ClienteController --> Cliente : usa
+TransacaoController --> Transacao : usa
+AuthMiddleware ..> ClienteController : protege rotas
+AuthMiddleware ..> TransacaoController : protege rotas
+
+@enduml
